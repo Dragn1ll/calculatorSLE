@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>CalculatorGaussSLE</Title>
+    <Description>Калькулятор для решения СЛАУ методом Гаусса</Description>
+    <PackageId>$(AssemblyName)CalculatorSLE</PackageId>
+    <Version>1.0.2</Version>
+    <AssemblyVersion>1</AssemblyVersion>
+    <FileVersion>1</FileVersion>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MauiApp1.Pages.VisualizationPage">
+
+    <ContentPage.Content>
+        <ScrollView
+            Background="White">
+
+            <VerticalStackLayout
+                x:Name="VisualizationPageLayout"
+                Padding="30,30"
+                Spacing="50"
+                HorizontalOptions="CenterAndExpand"
+                VerticalOptions="CenterAndExpand"
+                Background="White">
+
+                <Label
+                    Text="Корни СЛАУ:"
+                    Style="{StaticResource Headline}"
+                    SemanticProperties.HeadingLevel="Level1"
+                    HorizontalTextAlignment="Center"
+                    TextColor="Black"/>
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+    </ContentPage.Content>
+</ContentPage>
