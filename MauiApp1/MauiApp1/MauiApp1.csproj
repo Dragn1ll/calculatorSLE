@@ -63,6 +63,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Reference Include="Contract">
+	    <HintPath>..\..\Contract\Contract\bin\Debug\net8.0\Contract.dll</HintPath>
+	  </Reference>
 	  <Reference Include="GaussRealization">
 	    <HintPath>..\..\GaussRealization\GaussRealization\bin\Debug\net8.0\GaussRealization.dll</HintPath>
 	  </Reference>
@@ -75,6 +78,12 @@
 	  <Compile Update="Pages\VisualizationPage.xaml.cs">
 	    <DependentUpon>VisualizationPage.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Resources\Themes\Default.xaml.cs">
+	    <DependentUpon>Default.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Resources\Themes\Dark.xaml.cs">
+	    <DependentUpon>Dark.xaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -82,6 +91,12 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\VisualizationPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Resources\Themes\Default.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Resources\Themes\Dark.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

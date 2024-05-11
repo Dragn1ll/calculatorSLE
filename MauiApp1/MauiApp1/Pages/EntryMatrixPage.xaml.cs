@@ -1,27 +1,27 @@
-using System.Reflection;
 using GaussRealization;
+using Contract;
 
 namespace MauiApp1.Pages;
 
 public partial class EntryMatrixPage : ContentPage
 {
-    private Assembly _assembly;
-    private int _dimension;
+    private readonly int _dimension;
     private Grid _mainGrid;
-    private readonly List<Entry> _entries = new List<Entry>();
-    private Fraction[][] _matrix;
+    private readonly List<Entry> _entries = [];
+    private readonly Type _solution;
+    private IFraction[][] _matrix;
 
-    public EntryMatrixPage(int dimension, Assembly assembly)
+    public EntryMatrixPage(int dimension, Type solution)
     {
-        _assembly = assembly;
         _dimension = dimension;
+        _solution = solution;
         InitializeComponent();
         InitializeGrid(dimension);
     }
 
     private void InitializeGrid(int n)
     {
-        _matrix = new Fraction[n][];
+        _matrix = new IFraction[n][];
         _mainGrid = new Grid
         {
             ColumnSpacing = 5,
@@ -29,7 +29,6 @@ public partial class EntryMatrixPage : ContentPage
             WidthRequest = (n + 2) * 85,
             HeightRequest = n * 60,
         };
-
 
         Frame frame = new Frame
         {
@@ -56,6 +55,7 @@ public partial class EntryMatrixPage : ContentPage
         SetInitialContent(n);
         SetSymbolsContent(n);
         AddMainButton();
+        AddGoBackButton();
     }
 
     private void SetInitialContent(int n)
@@ -139,7 +139,7 @@ public partial class EntryMatrixPage : ContentPage
             HeightRequest = 60,
             FontSize = 18,
             Margin = 30,
-
+            Background = Colors.SkyBlue
         };
 
         mainButton.Clicked += (sender, e) =>
@@ -150,7 +150,7 @@ public partial class EntryMatrixPage : ContentPage
             {
                 for (int i = 0; i < _dimension; i++)
                 {
-                    _matrix[i] = new Fraction[_dimension + 1];
+                    _matrix[i] = new IFraction[_dimension + 1];
                     for (int j = 0; j < (_dimension + 1); j++)
                     {
                         if (int.TryParse(_entries[i * (_dimension + 1) + j].Text, out int num))
@@ -172,6 +172,31 @@ public partial class EntryMatrixPage : ContentPage
 
     private async void ToPage()
     {
-        await Navigation.PushAsync(new VisualizationPage(_matrix, _assembly, _dimension));
+        await Navigation.PushAsync(new VisualizationPage(_matrix, _dimension, _solution));
+    }
+
+    private void AddGoBackButton()
+    {
+        Button button = new Button()
+        {
+            Text = "Назад",
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.CenterAndExpand,
+            WidthRequest = 200,
+            HeightRequest = 60,
+            FontSize = 18,
+            Margin = 30,
+            Background = Colors.SkyBlue
+        };
+
+        button.Clicked += ToMainPage;
+
+        EntryPageLayout.Children.Add(button);
+    }
+
+    private async void ToMainPage(object? sender, EventArgs e)
+    {
+        await Task.Delay(100);
+        await Navigation.PopAsync();
     }
 }

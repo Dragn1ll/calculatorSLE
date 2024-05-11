@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MauiApp1.Resources.Themes.Default">
+
+    <Color x:Key="ButtonColor">DarkBlue</Color>
+    <Color x:Key="ButtonTextColor">White</Color>
+    <Color x:Key="Background">LightGray</Color>
+    <Color x:Key="TextColor">Black</Color>
+    <Color x:Key="ChangeTheme">SkyBlue</Color>
+
+    <SolidColorBrush x:Key="ButtonColorBrush">DarkBlue</SolidColorBrush>
+    <SolidColorBrush x:Key="ButtonTextColorBrush">White</SolidColorBrush>
+    <SolidColorBrush x:Key="BackgroundBrush">LightGray</SolidColorBrush>
+    <SolidColorBrush x:Key="TextColorBrush">Black</SolidColorBrush>
+    <SolidColorBrush x:Key="ChangeThemeBrush">SkyBlue</SolidColorBrush>
+
+</ResourceDictionary>

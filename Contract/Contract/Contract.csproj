@@ -8,9 +8,9 @@
     <Title>CalculatorGaussSLE</Title>
     <Description>Калькулятор для решения СЛАУ методом Гаусса</Description>
     <PackageId>$(AssemblyName)CalculatorSLE</PackageId>
-    <Version>1.0.2</Version>
-    <AssemblyVersion>1</AssemblyVersion>
-    <FileVersion>1</FileVersion>
+    <Version>1.0.4</Version>
+    <AssemblyVersion>3</AssemblyVersion>
+    <FileVersion>3</FileVersion>
   </PropertyGroup>
 
 </Project>

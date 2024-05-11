@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ContractCalculatorSLE" Version="1.0.2" />
+    <PackageReference Include="ContractCalculatorSLE" Version="1.0.3" />
   </ItemGroup>
 
 </Project>

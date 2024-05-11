@@ -7,10 +7,10 @@
                     x:Name="EntryPageLayout"
                     Padding="30,10"
                     Spacing="10"
-                    Background="White">
+                    Background="LightGray">
 
             <BoxView HeightRequest="50" 
-                             Background="White"/>
+                             Background="LightGray"/>
 
             <Label
                 Text="Решение СЛАУ методом Гаусса"

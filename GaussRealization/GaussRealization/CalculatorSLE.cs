@@ -2,24 +2,28 @@
 
 namespace GaussRealization;
 
-public class CalculatorSLE : ICalculatorSLE<Fraction>
+public class CalculatorSLE : ICalculatorSLE<IFraction>
 {
-    public Fraction[] GausSolution(Fraction[][] matrix)
+    public List<(int, IFraction[])> Steps { get; set; }
+
+    public IFraction[] GausSolution(IFraction[][] matrix)
     {
+        Steps = new List<(int, IFraction[])>();
+
         if (matrix == null || matrix.Length < 2)
             throw new ArgumentException("СЛАУ не подходит под условия решения методом Гаусса");
 
-        Fraction[][] tmp = MoveForward(matrix);
-        tmp = MoveBackward(tmp);
+        MoveForward(matrix, Steps);
+        MoveBackward(matrix, Steps);
 
-        var checker = Checker(tmp);
+        var checker = Checker(matrix);
 
         if (checker == 1)
         {
-            Fraction[] solution = new Fraction[matrix.Length];
-            for (int i = 0; i < tmp.Length; i++)
+            IFraction[] solution = new Fraction[matrix.Length];
+            for (int i = 0; i < matrix.Length; i++)
             {
-                solution[i] = Roots(tmp, i);
+                solution[i] = Roots(matrix, i);
                 solution[i].Reduce();
             }
             return solution;
@@ -27,11 +31,11 @@ public class CalculatorSLE : ICalculatorSLE<Fraction>
         else
         {
             var tmpFraction = new Fraction(checker);
-            return new Fraction[] { tmpFraction };
+            return new IFraction[] { tmpFraction };
         }
     }
 
-    private static Fraction[][] MoveForward(Fraction[][] matrix) 
+    private static void MoveForward(IFraction[][] matrix, List<(int, IFraction[])> steps) 
     {
         for (int i = 0; i < matrix.Length - 1; i++)
         {
@@ -44,26 +48,27 @@ public class CalculatorSLE : ICalculatorSLE<Fraction>
                         Swap(matrix, i, index);
                 }
                 if (matrix[i][i].Numerator == 0) return;
-                Fraction k = FractionUtils.Divide(new Fraction(-matrix[j][i].Numerator, matrix[j][i].Denominator), matrix[i][i]);
+                IFraction k = FractionUtils.Divide(new Fraction(-matrix[j][i].Numerator, matrix[j][i].Denominator), matrix[i][i]);
                 for (int l = 0; l < matrix[0].Length; l++)
                 {
                     matrix[j][l] = FractionUtils.Add(matrix[j][l], FractionUtils.Multiply(k, matrix[i][l]));
                     matrix[j][l].Reduce();
                 }
             });
-        }
 
-        return matrix;
+            for (int j = i + 1; j < matrix.Length; j++)
+                steps.Add((j, matrix[j]));
+        }
     }
 
-    private static Fraction[][] MoveBackward(Fraction[][] matrix)
+    private static void MoveBackward(IFraction[][] matrix, List<(int, IFraction[])> steps)
     {
         for (int i = matrix.Length - 1; i > 0; i--)
         {
             Parallel.For(0, i, j =>
             {
                 if (matrix[i][i].Numerator == 0) return;
-                Fraction k = FractionUtils.Divide(new Fraction(-matrix[j][i].Numerator, matrix[j][i].Denominator), matrix[i][i]);
+                IFraction k = FractionUtils.Divide(new Fraction(-matrix[j][i].Numerator, matrix[j][i].Denominator), matrix[i][i]);
                 int[] indexes = new int[] { matrix[0].Length - 1, i };
                 foreach (int l in indexes)
                 {
@@ -71,26 +76,25 @@ public class CalculatorSLE : ICalculatorSLE<Fraction>
                     matrix[j][l].Reduce();
                 }
             });
-        }
 
-        return matrix;
+            for (int j = i - 1; j >= 0; j--)
+                steps.Add((j, matrix[j]));
+        }
     }
 
-    private static int FindNonZero(Fraction[][] matrix, int i, int j)
+    private static int FindNonZero(IFraction[][] matrix, int i, int j)
     {
         for (int k = j; k < matrix.Length; k++)
             if (matrix[k][i].Numerator != 0)
                 return k;
         return -1;
     }
-    private static void Swap(Fraction[][] matrix, int i, int i2)
+    private static void Swap(IFraction[][] matrix, int i, int i2)
     {
-        Fraction[] buffer = matrix[i];
-        matrix[i] = matrix[i2];
-        matrix[i2] = buffer;
+        (matrix[i], matrix[i2]) = (matrix[i2], matrix[i]);
     }
 
-    private static int Checker(Fraction[][] matrix)
+    private static int Checker(IFraction[][] matrix)
     {
         int zeroLineindex = IndexOfZeroLine(matrix);
         if (zeroLineindex != -1)
@@ -104,7 +108,7 @@ public class CalculatorSLE : ICalculatorSLE<Fraction>
         return 1; // есть решение
     }
 
-    private static int IndexOfZeroLine(Fraction[][] matrix)
+    private static int IndexOfZeroLine(IFraction[][] matrix)
     {
         for (int line = 0; line < matrix.Length; line++)
         {
@@ -124,7 +128,7 @@ public class CalculatorSLE : ICalculatorSLE<Fraction>
         return -1;
     }
 
-    private static Fraction Roots(Fraction[][] matrix, int i)
+    private static IFraction Roots(IFraction[][] matrix, int i)
     {
         for (int j = 0; j < matrix.Length; j++)
         {
@@ -135,7 +139,7 @@ public class CalculatorSLE : ICalculatorSLE<Fraction>
         return null;
     }
 
-    public void PrintResults(Fraction[] results)
+    public void PrintResults(IFraction[] results)
     {
         if (results.Length > 1)
             for (int i = 0; i < results.Length; i++)
@@ -144,5 +148,12 @@ public class CalculatorSLE : ICalculatorSLE<Fraction>
             Console.WriteLine("Бесконечное количество решений");
         else
             Console.WriteLine("Нет корней");
+    }
+
+    public (int, IFraction[])[] GetSteps()
+    {
+        if (Steps != null!)
+            return Steps.ToArray();
+        throw new InvalidOperationException("Решение ещё не было произведено");
     }
 }

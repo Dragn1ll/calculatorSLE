@@ -1,5 +1,6 @@
 ﻿using MauiApp1.Pages;
 using System.Reflection;
+using Contract;
 
 namespace MauiApp1
 {
@@ -8,12 +9,8 @@ namespace MauiApp1
         private int _dimension;
         private string _realizationPath;
         private Assembly _assembly;
-        private bool _assemblyStatus;
-        private Type[] _types;
-        private Type[] _interfaces;
-        private Dictionary<Type, Type> _typesDictionary = new();
-        private string _contractPath = @"C:\Users\abdul\tren\CalculatorSLE\Contract\Contract\bin\Debug\net8.0\Contract.dll";
-        private Button _dllButton = new()
+        private Type _solution;
+        private readonly Button _dllButton = new()
         {
             Text = "Загрузить сборку",
             HorizontalOptions = LayoutOptions.Center,
@@ -21,6 +18,7 @@ namespace MauiApp1
             WidthRequest = 200,
             HeightRequest = 60,
             FontSize = 20,
+            Background = Colors.SkyBlue,
         };
 
         public MainPage()
@@ -47,6 +45,7 @@ namespace MauiApp1
                 HeightRequest = 50,
                 MaxLength = 100,
                 TextColor = Colors.Black,
+                Background = Colors.GhostWhite,
             };
             entry.TextChanged += EntryTextChanged!;
 
@@ -72,6 +71,7 @@ namespace MauiApp1
                 WidthRequest = 200,
                 HeightRequest = 60,
                 FontSize = 18,
+                Background = Colors.SkyBlue,
             };
             
             mainButton.Clicked += (sender, e) =>
@@ -88,9 +88,9 @@ namespace MauiApp1
                 await DisplayAlert("Соси бибу", "СЛАУ слишком велика. Введите количество неизвестных максимум: 10", "OK");
             else if (_dimension > 1)
             {
-                if (_assemblyStatus)
+                if (_solution != null!)
                 {
-                    await Navigation.PushAsync(new EntryMatrixPage(_dimension, _assembly), true);
+                    await Navigation.PushAsync(new EntryMatrixPage(_dimension, _solution), true);
                 }
                 else
                 {
@@ -103,8 +103,6 @@ namespace MauiApp1
 
         private void AddGetDllButton()
         {
-            _dllButton.BackgroundColor = Colors.Red;
-
             _dllButton.Clicked += async (sender, e) =>
             {
                 await PickDllFile();
@@ -129,7 +127,7 @@ namespace MauiApp1
                     FileTypes = customFileType,
                 });
 
-                _realizationPath = result.FullPath;
+                _realizationPath = result!.FullPath;
                 await UploadNewDll();
             }
             catch
@@ -146,51 +144,17 @@ namespace MauiApp1
 
         private async Task CheckContractRealization()
         {
-            _assemblyStatus = true;
+            _solution = _assembly.GetTypes().FirstOrDefault(t => t.GetInterfaces().Contains(typeof(ICalculatorSLE<IFraction>)))!;
 
-            _types = this._assembly.GetTypes();
-            _interfaces = Assembly.LoadFrom(_contractPath).GetTypes().Where(type => type.IsInterface).ToArray();
-
-            foreach (var interfaceType in _interfaces)
+            if (_solution != null!)
             {
-                bool isImplemented = false;
-                foreach (var type in _types)
-                {
-                    foreach (var face in type.GetInterfaces())
-                    {
-                        if (face.IsGenericType && face.GetGenericTypeDefinition() == interfaceType)
-                        {
-                            isImplemented = true;
-                            _typesDictionary.Add(face.GetGenericTypeDefinition(), type);
-
-                            break;
-                        }
-                        else if (face == interfaceType)
-                        {
-                            isImplemented = true;
-                            _typesDictionary.Add(face, type);
-
-                            break;
-                        }
-                    }
-                    if (isImplemented) break;
-                }
-
-                if (!isImplemented)
-                {
-                    _assemblyStatus = false;
-                    break;
-                }
-            }
-
-            if (_assemblyStatus)
-            {
-                _dllButton.BackgroundColor = Colors.Green;
+                MainLayout.Children.Remove(_dllButton);
             }
             else
             {
                 await DisplayAlert("Ошибка", "Реализация не соответсвует контракту", "OK");
             }
+
         }
     }
 }

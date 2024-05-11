@@ -1,48 +1,155 @@
-using System.Reflection;
-using GaussRealization;
+using Contract;
 
 namespace MauiApp1.Pages;
 
 public partial class VisualizationPage : ContentPage
 {
-    private Fraction[][] _matrix;
-    private Assembly _assembly;
-    private int _dimension;
-    private Fraction[] _resultMatrix;
+    private readonly IFraction[][] _inputMatrix;
+    private Label[,] _matrix;
+    private readonly int _dimension;
+    private IFraction[] _resultMatrix;
+    private int _timeOfSolution = 5;
+    private readonly Type _solution;
+    private readonly Button _backButton = new()
+    {
+        Text = "Назад",
+        HorizontalOptions = LayoutOptions.Center,
+        VerticalOptions = LayoutOptions.CenterAndExpand,
+        WidthRequest = 200,
+        HeightRequest = 60,
+        FontSize = 18,
+        Margin = 30,
+        Background = Colors.SkyBlue
+    };
+    private Button _changeButton = new Button()
+    {
+        Text = "Изменить",
+        HorizontalOptions = LayoutOptions.Center,
+        VerticalOptions = LayoutOptions.CenterAndExpand,
+        WidthRequest = 200,
+        HeightRequest = 60,
+        FontSize = 18,
+        Margin = 10,
+        Background = Colors.SkyBlue
+    };
+    private readonly Entry _entryTime = new Entry
+    {
+        Placeholder = "5",
+        HorizontalTextAlignment = TextAlignment.Center,
+        VerticalTextAlignment = TextAlignment.Center,
+        FontSize = 18,
+        WidthRequest = 45,
+        HeightRequest = 40,
+        MaxLength = int.MaxValue,
+        BackgroundColor = Colors.GhostWhite,
+        TextColor = Colors.Black,
+    };
+    
 
-    private ActivityIndicator activityIndicator = new ActivityIndicator()
+    private readonly ActivityIndicator _activityIndicator = new ActivityIndicator()
     {
         IsRunning = true,
         HeightRequest = 100,
         WidthRequest = 100,
     };
 
-    public VisualizationPage(Fraction[][] matrix, Assembly assembly, int dimension)
+    public VisualizationPage(IFraction[][] matrix, int dimension, Type solution)
     {
-        _matrix = matrix;
-        _assembly = assembly;
+        _inputMatrix = matrix;
         _dimension = dimension;
+        _solution = solution;
         InitializeComponent();
         AddActivityCircle();
-        GetDataFromDll();
+        StartVisualization();
     }
 
     private void AddActivityCircle()
     {
-        VisualizationPageLayout.Children.Add(activityIndicator);
+        VisualizationPageLayout.Children.Add(_activityIndicator);
     }
 
-    private void GetDataFromDll()
+    private async void StartVisualization()
     {
-        Type? calculatorSLEType = _assembly.GetTypes().FirstOrDefault(t => t.Name == "CalculatorSLE");
+        var solution = Activator.CreateInstance(_solution);
+        var gaussSolution = _solution.GetMethod("GausSolution");
+        var getSteps = _solution.GetMethod("GetSteps");
 
-        var calculatorSLEInstance = Activator.CreateInstance(calculatorSLEType!);
+        Grid grid = new Grid
+        {
+            ColumnSpacing = 5,
+            RowSpacing = 5,
+            WidthRequest = _dimension * 70,
+            HeightRequest = _dimension * 60,
+        };
 
-        MethodInfo? method = calculatorSLEType!.GetMethod("GausSolution");
+        Frame frame = new Frame
+        {
+            Margin = 20,
+            Content = grid,
+            CornerRadius = 10,
+            HasShadow = true,
+            Padding = 15,
+            WidthRequest = _dimension * 90,
+            HeightRequest = _dimension * 80,
+            BackgroundColor = Colors.White,
+        };
 
-        var result = (Fraction[])method.Invoke(calculatorSLEInstance, new object[] { _matrix })!;
+        VisualizationPageLayout.Add(frame);
+        
+        AddSpeedEntry();
+        AddGoBackButton();
 
-        _resultMatrix = result;
+        VisualizationPageLayout.Children.Remove(_activityIndicator);
+
+        for (int i = 0; i < _dimension; i++)
+        {
+            grid.RowDefinitions.Add(new RowDefinition());
+            grid.ColumnDefinitions.Add(new ColumnDefinition());
+        }
+        grid.ColumnDefinitions.Add(new ColumnDefinition());
+
+        _matrix = new Label[_dimension, _dimension + 1];
+
+        for (int row = 0; row < _dimension; row++)
+        {
+            for (int column = 0; column < (_dimension + 1); column++)
+            {
+                Label label = new Label
+                {
+                    Text = _inputMatrix[row][column].ToString(),
+                    HorizontalTextAlignment = TextAlignment.Center,
+                    VerticalTextAlignment = TextAlignment.Center,
+                    FontSize = 20,
+                    BackgroundColor = Colors.White,
+                    TextColor = Colors.Black,
+                };
+
+                grid.Add(label, column, row);
+                _matrix[row, column] = label;
+            } 
+        }
+
+        _resultMatrix = await Task.Run(() => (IFraction[])gaussSolution.Invoke(solution, new object[] { _inputMatrix })!);
+
+        (int Row, IFraction[] Nums)[] steps = ((int, IFraction[])[])getSteps.Invoke(solution, null)!;
+
+        await Task.Delay(2000);
+        foreach (var step in steps)
+        {
+            for (int column = 0; column < (_dimension + 1); column++)
+            {
+                _matrix[step.Row, column].Text = step.Nums[column].ToString();
+                
+                await Task.Delay(_timeOfSolution * 500);
+            }
+        }
+
+        VisualizationPageLayout.Remove(frame);
+
+        VisualizationPageLayout.Remove(_backButton);
+        VisualizationPageLayout.Remove(_entryTime);
+        VisualizationPageLayout.Remove(_changeButton);
+
 
         MainThread.BeginInvokeOnMainThread(InitializeGrid);
 
@@ -68,10 +175,10 @@ public partial class VisualizationPage : ContentPage
             CornerRadius = 10,
             HasShadow = true,
             Padding = new Thickness(15),
-            WidthRequest =  500,
+            WidthRequest =  1000,
             HeightRequest = _dimension * 90,
-            BackgroundColor = Colors.White,
-            BorderColor = Colors.White,
+            BackgroundColor = Colors.LightGray,
+            BorderColor = Colors.LightGray,
         };
 
         for (int i = 0; i < _dimension; i++)
@@ -87,7 +194,7 @@ public partial class VisualizationPage : ContentPage
                 HorizontalTextAlignment = TextAlignment.Center,
                 Text = $"x{i + 1} = {_resultMatrix[i].ToString()}",
                 FontSize = 30,
-                WidthRequest = 190,
+                WidthRequest = 500,
                 HeightRequest = 80,
                 TextColor = Colors.Black,
             };
@@ -98,7 +205,57 @@ public partial class VisualizationPage : ContentPage
         }
 
         VisualizationPageLayout.Children.Add(frame);
+        VisualizationPageLayout.Children.Add(_backButton);
+    }
 
-        VisualizationPageLayout.Children.Remove(activityIndicator);
+    private void AddGoBackButton()
+    {
+        _backButton.Clicked += ToMainPage;
+
+        VisualizationPageLayout.Children.Add(_backButton);
+    }
+
+    private async void ToMainPage(object? sender, EventArgs e)
+    {
+        await Task.Delay(100);
+        await Navigation.PopAsync();
+    }
+
+    private void AddSpeedEntry()
+    {
+        _entryTime.TextChanged += EntryTextChanged!;
+
+        _changeButton.Clicked += SpeedChanged!;
+
+        VisualizationPageLayout.Children.Add(_entryTime);
+        VisualizationPageLayout.Children.Add(_changeButton);
+    }
+
+
+    private async void EntryTextChanged(object sender, TextChangedEventArgs e)
+    {
+        await Task.Run(() =>
+        {
+            Entry entry = (Entry)sender;
+            string newText = e.NewTextValue;
+
+            if (!string.IsNullOrEmpty(newText))
+            {
+                newText = string.Join("", newText);
+                entry.Text = newText;
+            }
+        });
+    }
+
+    private async void SpeedChanged(object sender, EventArgs e)
+    {
+        await Task.Run(() =>
+        {
+            if (_entryTime != null!)
+                if (int.TryParse(_entryTime.Text, out int num))
+                    _timeOfSolution = num;
+                else
+                    DisplayAlert("Ошибка", "Введите число", "ОК");
+        });
     }
 }
